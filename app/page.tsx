@@ -62,6 +62,7 @@ export default function Home() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter title of book, article, or publication"
             className="flex-grow"
+            disabled={isLoading}
           />
           <Button type="submit" disabled={isLoading}>
             {isLoading ? "Synthesizing..." : "Synthesize"}
