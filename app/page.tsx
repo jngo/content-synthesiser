@@ -52,25 +52,34 @@ export default function Home() {
   }
 
   return (
-    <main className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Content Synthesizer</h1>
-      <form onSubmit={handleSubmit} className="mb-4">
-        <div className="flex gap-2">
-          <Input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter title of book, article, or publication"
-            className="flex-grow"
-            disabled={isLoading}
-          />
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Synthesizing..." : "Synthesize"}
-          </Button>
+    <main className="h-screen w-screen overflow-hidden relative">
+      {/* Floating form container */}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-2xl px-4">
+        <div className="bg-background/95 backdrop-blur-sm rounded-lg p-4 shadow-lg border">
+          <h1 className="text-2xl font-bold mb-4">Content Synthesizer</h1>
+          <form onSubmit={handleSubmit} className="mb-4">
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter title of book, article, or publication"
+                className="flex-grow"
+                disabled={isLoading}
+              />
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Synthesizing..." : "Synthesize"}
+              </Button>
+            </div>
+          </form>
+          {error && <p className="text-red-500">{error}</p>}
         </div>
-      </form>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      {mermaidCode && <Mermaid chart={mermaidCode} />}
+      </div>
+
+      {/* Diagram container */}
+      <div className="absolute inset-0">
+        {mermaidCode && <Mermaid chart={mermaidCode} />}
+      </div>
     </main>
   )
 }

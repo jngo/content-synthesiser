@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import mermaid from "mermaid"
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch"
 
 interface MermaidProps {
   chart: string
@@ -33,7 +34,7 @@ export default function Mermaid({ chart }: MermaidProps) {
           if (svgElement) {
             svgElement.style.width = '100%'
             svgElement.style.height = '100%'
-            svgElement.style.maxWidth = '100%'
+            svgElement.style.maxWidth = 'none'
             svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet')
           }
         } catch (error) {
@@ -49,9 +50,34 @@ export default function Mermaid({ chart }: MermaidProps) {
   }, [chart])
 
   return (
-    <div className="flex justify-center w-full h-full min-h-[400px] p-4">
-      <div ref={mermaidRef} className="w-full h-full" />
-    </div>
+    <TransformWrapper
+      initialScale={1}
+      minScale={0.5}
+      maxScale={2}
+      centerOnInit={true}
+      smooth={true}
+      limitToBounds={false}
+      centerZoomedOut={false}
+      wheel={{
+        step: 0.05,
+        smoothStep: 0.001,
+        disabled: false,
+        wheelDisabled: false,
+        touchPadDisabled: false,
+        activationKeys: [],
+        excluded: [],
+      }}
+      pinch={{
+        disabled: false
+      }}
+    >
+      <TransformComponent
+        wrapperStyle={{ width: "100%", height: "100%" }}
+        contentStyle={{ width: "100%", height: "100%" }}
+      >
+        <div ref={mermaidRef} className="w-full h-full" />
+      </TransformComponent>
+    </TransformWrapper>
   )
 }
 
