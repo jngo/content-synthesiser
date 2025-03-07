@@ -5,11 +5,19 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import Mermaid from "./components/Mermaid"
+import FlowDiagram from "./components/FlowDiagram"
+import type { Node, Edge } from 'reactflow'
+
+interface DiagramData {
+  nodes: Node[]
+  edges: Edge[]
+  zoom: number
+  pan: { x: number; y: number }
+}
 
 export default function Home() {
   const [title, setTitle] = useState("")
-  const [mermaidCode, setMermaidCode] = useState("")
+  const [diagramData, setDiagramData] = useState<DiagramData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -17,7 +25,7 @@ export default function Home() {
     e.preventDefault()
     setIsLoading(true)
     setError("")
-    setMermaidCode("")
+    setDiagramData(null)
 
     try {
       const response = await fetch("/api/synthesize", {
@@ -38,11 +46,11 @@ export default function Home() {
         throw new Error(data.error)
       }
 
-      if (!data.mermaidCode) {
-        throw new Error("No Mermaid code received from the server")
+      if (!data.nodes || !data.edges) {
+        throw new Error("Invalid diagram data received from the server")
       }
 
-      setMermaidCode(data.mermaidCode)
+      setDiagramData(data)
     } catch (error) {
       console.error("Error:", error)
       setError(error instanceof Error ? error.message : "An unknown error occurred")
@@ -78,7 +86,14 @@ export default function Home() {
 
       {/* Diagram container */}
       <div className="absolute inset-0">
-        {mermaidCode && <Mermaid chart={mermaidCode} />}
+        {diagramData && (
+          <FlowDiagram
+            nodes={diagramData.nodes}
+            edges={diagramData.edges}
+            zoom={diagramData.zoom}
+            pan={diagramData.pan}
+          />
+        )}
       </div>
     </main>
   )

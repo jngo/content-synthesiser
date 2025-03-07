@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { openai } from "@ai-sdk/openai"
-import { generateText } from "ai"
+import { generateText, Output } from "ai"
+import { z } from "zod";
 
 export const runtime = "edge"
 
@@ -18,26 +19,65 @@ export async function POST(req: Request) {
 - Group the same kinds of ideas into logical categories. Ensure each idea is ordered logically either deductively, chronologically, structurally, or comparatively.
 - For each grouping, summarise the ideas into a single sentence. This is the label for each group. These labels form the key line.
 - Synthesise these labels into a single sentence that provides a new perspective based on insights and implications of these ideas.
-- Present your key insight as a Minto Pyramid structured flowchart, with synthesis at the top, key line in the middle, and ideas at the bottom. Format the diagram using Mermaid syntax.
-- Only output the raw Mermaid diagram syntax without the Markdown code block, nothing else.`
+- Present your key insight as a Minto Pyramid structured flowchart, with synthesis at the top, key line in the middle, and ideas at the bottom. Format as a React Flow diagram with nodes and edges.`
 
-    const { text: mermaidCode } = await generateText({
+    const schema = z
+    .object({
+      pan: z
+        .object({
+          x: z.number().describe("Current pan offset on the x-axis."),
+          y: z.number().describe("Current pan offset on the y-axis."),
+        })
+        .strict(),
+      zoom: z.number().describe("Current zoom level of the tree diagram."),
+      edges: z
+        .array(
+          z
+            .object({
+              id: z.string().describe("Unique identifier for the edge."),
+              source: z.string().describe("The ID of the source node."),
+              target: z.string().describe("The ID of the target node."),
+            })
+            .strict()
+        )
+        .describe("Array of edges connecting the nodes in the diagram."),
+      nodes: z
+        .array(
+          z
+            .object({
+              id: z.string().describe("Unique identifier for the node."),
+              data: z
+                .object({
+                  label: z.string().describe("Label of the node."),
+                })
+                .strict(),
+              position: z
+                .object({
+                  x: z.number().describe("X coordinate of the node."),
+                  y: z.number().describe("Y coordinate of the node."),
+                })
+                .strict(),
+            })
+            .strict()
+        )
+        .describe("Array of nodes in the tree diagram."),
+    })
+    .strict();
+
+    const { text: diagramData } = await generateText({
       model: openai("o1"),
       system: systemPrompt,
-      prompt: title
+      prompt: title,
+      experimental_output: Output.object({
+        schema: schema
+      })
     })
 
-    if (!mermaidCode) {
+    if (!diagramData) {
       throw new Error("No content generated from OpenAI")
     }
 
-    let cleanMermaidCode = mermaidCode
-    const match = mermaidCode.match(/```mermaid\n([\s\S]*?)\n```/)
-    if (match) {
-      cleanMermaidCode = match[1]
-    }
-
-    return NextResponse.json({ mermaidCode: cleanMermaidCode })
+    return NextResponse.json(JSON.parse(diagramData))
   } catch (error) {
     console.error("Detailed error:", error)
 
