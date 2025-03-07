@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server"
-import OpenAI from "openai"
+import { openai } from "@ai-sdk/openai"
+import { generateText } from "ai"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+export const runtime = "edge"
 
 export async function POST(req: Request) {
   try {
@@ -22,28 +21,23 @@ export async function POST(req: Request) {
 - Present your key insight as a Minto Pyramid structured flowchart, with synthesis at the top, key line in the middle, and ideas at the bottom. Format the diagram using Mermaid syntax.
 - Only output the raw Mermaid diagram syntax without the Markdown code block, nothing else.`
 
-    const completion = await openai.chat.completions.create({
-      model: "o1",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: title },
-      ],
+    const { text: mermaidCode } = await generateText({
+      model: openai("o1"),
+      system: systemPrompt,
+      prompt: title
     })
-
-    let mermaidCode = completion.choices[0].message.content
-
-    if (mermaidCode) {
-      const match = mermaidCode.match(/```mermaid\n([\s\S]*?)\n```/)
-      if (match) {
-        mermaidCode = match[1]
-      }
-    }
 
     if (!mermaidCode) {
       throw new Error("No content generated from OpenAI")
     }
 
-    return NextResponse.json({ mermaidCode })
+    let cleanMermaidCode = mermaidCode
+    const match = mermaidCode.match(/```mermaid\n([\s\S]*?)\n```/)
+    if (match) {
+      cleanMermaidCode = match[1]
+    }
+
+    return NextResponse.json({ mermaidCode: cleanMermaidCode })
   } catch (error) {
     console.error("Detailed error:", error)
 

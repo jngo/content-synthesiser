@@ -9,13 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.2.1",
     "@radix-ui/react-slot": "^1.1.2",
+    "ai": "^4.1.54",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",
     "mermaid": "^11.4.1",
     "next": "14.2.16",
-    "openai": "^4.85.1",
     "react": "^18",
     "react-dom": "^18",
     "react-zoom-pan-pinch": "^3.7.0",
