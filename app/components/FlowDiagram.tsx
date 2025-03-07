@@ -73,8 +73,8 @@ export default function FlowDiagram({
     direction
   )
   
-  const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges)
+  const [nodes, , onNodesChange] = useNodesState(layoutedNodes)
+  const [edges, , onEdgesChange] = useEdgesState(layoutedEdges)
 
   const onInit = useCallback((reactFlowInstance: ReactFlowInstance) => {
     if (zoom !== 1 || pan.x !== 0 || pan.y !== 0) {
