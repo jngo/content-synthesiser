@@ -1,4 +1,5 @@
 import type React from "react"
+import 'reactflow/dist/base.css'
 import "./globals.css"
 import { Inter } from "next/font/google"
 
@@ -16,9 +17,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.11.0/mermaid.min.css" />
-      </head>
       <body className={inter.className}>{children}</body>
     </html>
   )

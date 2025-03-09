@@ -12,7 +12,13 @@ import ReactFlow, {
   ReactFlowInstance
 } from 'reactflow'
 import dagre from 'dagre'
-import 'reactflow/dist/style.css'
+import IdeaNode from './IdeaNode';
+import SynthesisNode from './SynthesisNode';
+
+const nodeTypes = {
+  idea: IdeaNode,
+  synthesis: SynthesisNode,
+}
 
 interface FlowDiagramProps {
   nodes: Node[]
@@ -26,15 +32,20 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: 'TB' | 'LR
   const dagreGraph = new dagre.graphlib.Graph()
   dagreGraph.setDefaultEdgeLabel(() => ({}))
 
-  const nodeWidth = 200
-  const nodeHeight = 100
 
   // Configure the direction of the layout
-  dagreGraph.setGraph({ rankdir: direction, nodesep: 50, ranksep: 100 })
+  dagreGraph.setGraph({ rankdir: direction, nodesep: 48, ranksep: 80 })
 
   // Add nodes to the dagre graph
   nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight })
+    // Check if this node is a target in any edge
+    const hasParents = edges.some(edge => edge.target === node.id)
+
+    if (hasParents) {
+      dagreGraph.setNode(node.id, { width: 224, height: 72 })
+    } else {
+      dagreGraph.setNode(node.id, { width: 320, height: 72 })
+    }
   })
 
   // Add edges to the dagre graph
@@ -48,12 +59,16 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: 'TB' | 'LR
   // Get the positioned nodes
   const layoutedNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id)
+    // Check if this node is a target in any edge
+    const hasParents = edges.some(edge => edge.target === node.id)
+    
     return {
       ...node,
       position: {
-        x: nodeWithPosition.x - nodeWidth / 2,
-        y: nodeWithPosition.y - nodeHeight / 2,
+        x: nodeWithPosition.x - nodeWithPosition.width / 2,
+        y: nodeWithPosition.y - nodeWithPosition.height / 2,
       },
+      type: hasParents ? 'idea' : 'synthesis',
     }
   })
 
@@ -93,6 +108,7 @@ export default function FlowDiagram({
           onInit={onInit}
           fitView
           attributionPosition="bottom-left"
+          nodeTypes={nodeTypes}
         >
           <Controls />
           <Background />
