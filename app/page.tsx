@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import FlowDiagram from "./components/FlowDiagram"
 import type { Node, Edge } from 'reactflow'
+import exampleData from '@/lib/example.json'
 
 interface DiagramData {
   nodes: Node[]
@@ -26,6 +27,13 @@ export default function Home() {
     setIsLoading(true)
     setError("")
     setDiagramData(null)
+
+    // Check if the input is "EXAMPLE"
+    if (title.trim().toUpperCase() === "EXAMPLE") {
+      setDiagramData(exampleData)
+      setIsLoading(false)
+      return
+    }
 
     try {
       const response = await fetch("/api/synthesize", {
