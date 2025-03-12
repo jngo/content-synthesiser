@@ -19,4 +19,4 @@ export const BaseNode = forwardRef<
   />
 ));
 
-BaseNode.displayName = "Base Node";
+BaseNode.displayName = "BaseNode";
