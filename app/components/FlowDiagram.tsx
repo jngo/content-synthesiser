@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import ReactFlow, {
   Node,
   Edge,
@@ -31,7 +31,6 @@ interface FlowDiagramProps {
 const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: 'TB' | 'LR' = 'TB') => {
   const dagreGraph = new dagre.graphlib.Graph()
   dagreGraph.setDefaultEdgeLabel(() => ({}))
-
 
   // Configure the direction of the layout
   dagreGraph.setGraph({ rankdir: direction, nodesep: 48, ranksep: 80 })
@@ -88,8 +87,9 @@ export default function FlowDiagram({
     direction
   )
   
-  const [nodes, , onNodesChange] = useNodesState(layoutedNodes)
-  const [edges, , onEdgesChange] = useEdgesState(layoutedEdges)
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges)
+  const [expandingNodeId, setExpandingNodeId] = useState<string | null>(null)
 
   const onInit = useCallback((reactFlowInstance: ReactFlowInstance) => {
     if (zoom !== 1 || pan.x !== 0 || pan.y !== 0) {
@@ -97,11 +97,61 @@ export default function FlowDiagram({
     }
   }, [zoom, pan])
 
+  const handleExpandNode = useCallback(async (nodeId: string) => {
+    setExpandingNodeId(nodeId)
+    const nodeToExpand = nodes.find(n => n.id === nodeId)
+    if (!nodeToExpand) return
+
+    try {
+      const response = await fetch('/api/expand', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nodeLabel: nodeToExpand.data.label,
+          currentNodes: nodes,
+          currentEdges: edges,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const { nodes: newNodes, edges: newEdges } = await response.json()
+      
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+        [...nodes, ...newNodes],
+        [...edges, ...newEdges],
+        direction
+      )
+
+      setNodes(layoutedNodes)
+      setEdges(layoutedEdges)
+    } catch (error) {
+      console.error('Error expanding node:', error)
+    } finally {
+      setExpandingNodeId(null)
+    }
+  }, [nodes, edges, direction])
+
+  // Update nodes to include onExpand handler and loading state
+  const nodesWithHandlers = nodes.map(node => ({
+    ...node,
+    data: {
+      ...node.data,
+      onExpand: handleExpandNode,
+      toolbarVisible: true,
+      isExpanding: node.id === expandingNodeId,
+    },
+  }))
+
   return (
     <ReactFlowProvider>
       <div style={{ width: '100%', height: '100%' }}>
         <ReactFlow
-          nodes={nodes}
+          nodes={nodesWithHandlers}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}

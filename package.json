@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.2.1",
+    "@radix-ui/react-menubar": "^1.1.6",
     "@radix-ui/react-slot": "^1.1.2",
     "@tailwindcss/postcss": "^4.0.12",
     "ai": "^4.1.54",
