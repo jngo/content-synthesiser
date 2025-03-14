@@ -24,7 +24,7 @@ const IdeaNode = memo(({ data, selected, id }: NodeProps<IdeaNodeData>) => {
     <BaseNode selected={selected} className="w-56 text-sm">
       <div>{label}</div>
 
-      <NodeToolbar isVisible={data.toolbarVisible} position={Position.Bottom}>
+      <NodeToolbar isVisible={selected} position={Position.Bottom}>
         <Button 
           variant="ghost" 
           size="icon" 
