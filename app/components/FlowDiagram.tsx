@@ -142,7 +142,6 @@ export default function FlowDiagram({
     data: {
       ...node.data,
       onExpand: handleExpandNode,
-      toolbarVisible: true,
       isExpanding: node.id === expandingNodeId,
     },
   }))
