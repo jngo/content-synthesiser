@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Handle, NodeProps, NodeToolbar, Position } from 'reactflow';
 import { BaseNode } from "./base-node";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ interface IdeaNodeData {
 
 const IdeaNode = memo(({ data, selected, id }: NodeProps<IdeaNodeData>) => {
   const label = data?.label as string;
+  const [isHovered, setIsHovered] = useState(false);
   
   const handleExpandClick = () => {
     if (data.onExpand && !data.isExpanding) {
@@ -21,21 +22,26 @@ const IdeaNode = memo(({ data, selected, id }: NodeProps<IdeaNodeData>) => {
   };
   
   return (
-    <BaseNode selected={selected} className="w-56 text-sm">
+    <BaseNode
+      selected={selected}
+      className="w-56 text-sm"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div>{label}</div>
 
-      <NodeToolbar isVisible={selected} position={Position.Bottom}>
+      <NodeToolbar isVisible={isHovered} position={Position.Bottom} offset={-10} className="rounded-md border bg-card p-0 gap-1 flex items-center">
         <Button 
           variant="ghost" 
-          size="icon" 
-          className="p-1" 
+          size="sm"
+          className="p-1 text-xs"
           onClick={handleExpandClick}
           disabled={data.isExpanding}
         >
           {data.isExpanding ? (
-            <Loader2 size={8} className="animate-spin" />
+            <><Loader2 size={8} strokeWidth={1.5} className="animate-spin" /> Expanding…</>
           ) : (
-            <Network size={8} />
+            <><Network size={8} strokeWidth={1.5} /> Expand</>
           )}
         </Button>
       </NodeToolbar>
