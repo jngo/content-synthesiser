@@ -3,8 +3,6 @@ import { openai } from "@ai-sdk/openai"
 import { generateText, Output } from "ai"
 import { z } from "zod";
 
-export const runtime = "edge"
-
 export async function POST(req: Request) {
   try {
     const { title } = await req.json()
@@ -86,7 +84,10 @@ export async function POST(req: Request) {
       errorMessage += ` Details: ${error.message}`
     }
 
-    return NextResponse.json({ error: errorMessage }, { status: 500 })
+    // Return appropriate status code based on error type
+    const status = error instanceof Error && error.message.includes("timeout") ? 504 : 500
+
+    return NextResponse.json({ error: errorMessage }, { status })
   }
 }
 
