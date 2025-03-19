@@ -61,7 +61,6 @@ export default function Home() {
 
       setDiagramData(data)
     } catch (error) {
-      console.error("Error:", error)
       setError(error instanceof Error ? error.message : "An unknown error occurred")
     } finally {
       setIsLoading(false)

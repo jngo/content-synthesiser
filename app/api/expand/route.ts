@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { openai } from '@ai-sdk/openai'
 import { Node, Edge } from 'reactflow'
-import { generateText } from 'ai'
-import { Output } from 'ai'
+import { generateObject } from 'ai'
 
 const schema = z.object({
   nodes: z.array(
@@ -54,21 +53,18 @@ Make sure the additional nodes are connected to the parent node.
 Current diagram context:
 ${JSON.stringify({ nodes: currentNodes, edges: currentEdges }, null, 2)}`
 
-    const { text: expansionData } = await generateText({
+    const response = await generateObject({
       model: openai("o1"),
       system: systemPrompt,
       prompt: prompt,
-      experimental_output: Output.object({
-        schema: schema
-      })
+      schema: schema
     })
 
-    if (!expansionData) {
+    if (!response) {
       throw new Error("No content generated from OpenAI")
     }
 
-    const parsedData = schema.parse(JSON.parse(expansionData))
-    return NextResponse.json(parsedData)
+    return NextResponse.json(response.object)
   } catch (error) {
     console.error('Error:', error)
     return NextResponse.json(

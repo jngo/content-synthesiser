@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { openai } from "@ai-sdk/openai"
-import { generateText, Output } from "ai"
+import { generateObject } from "ai"
 import { z } from "zod";
 
 export async function POST(req: Request) {
@@ -62,20 +62,18 @@ export async function POST(req: Request) {
     })
     .strict();
 
-    const { text: diagramData } = await generateText({
+    const response = await generateObject({
       model: openai("o1"),
       system: systemPrompt,
       prompt: title,
-      experimental_output: Output.object({
-        schema: schema
-      })
+      schema: schema
     })
 
-    if (!diagramData) {
+    if (!response) {
       throw new Error("No content generated from OpenAI")
     }
 
-    return NextResponse.json(JSON.parse(diagramData))
+    return NextResponse.json(response.object)
   } catch (error) {
     console.error("Detailed error:", error)
 
