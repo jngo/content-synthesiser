@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     .strict();
 
     const response = await generateObject({
-      model: openai("o1"),
+      model: openai("o3"),
       system: systemPrompt,
       prompt: title,
       schema: schema
