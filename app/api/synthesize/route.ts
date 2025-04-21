@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { openai } from "@ai-sdk/openai"
 import { generateObject } from "ai"
-import { z } from "zod";
+import { synthesisSchema } from "@/lib/synthesis"
 
 export async function POST(req: Request) {
   try {
@@ -19,44 +19,11 @@ export async function POST(req: Request) {
 - Synthesise these labels into a single sentence that provides a new perspective based on insights and implications of these ideas.
 - Present your key insight as a Minto Pyramid structured flowchart, with synthesis at the top, key line in the middle, and ideas at the bottom. Format as a React Flow diagram with nodes and edges.`
 
-    const schema = z
-    .object({
-      reasoningSteps: z
-        .array(z.string())
-        .describe("The reasoning steps taken by the model to generate the synthesis."),
-      nodes: z
-        .array(
-          z
-            .object({
-              id: z.string().describe("Unique identifier for the node."),
-              data: z
-                .object({
-                  label: z.string().describe("Label of the node."),
-                })
-                .strict(),
-            })
-            .strict()
-        )
-        .describe("Array of nodes in the tree diagram."),
-      edges: z
-        .array(
-          z
-            .object({
-              id: z.string().describe("Unique identifier for the edge."),
-              source: z.string().describe("The ID of the source node."),
-              target: z.string().describe("The ID of the target node."),
-            })
-            .strict()
-        )
-        .describe("Array of edges connecting the nodes in the diagram."),
-    })
-    .strict();
-
     const response = await generateObject({
       model: openai("o3"),
       system: systemPrompt,
       prompt: title,
-      schema: schema
+      schema: synthesisSchema
     })
 
     if (!response) {

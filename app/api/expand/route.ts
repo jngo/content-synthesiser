@@ -1,29 +1,8 @@
 import { NextResponse } from 'next/server'
-import { z } from 'zod'
 import { openai } from '@ai-sdk/openai'
 import { Node, Edge } from 'reactflow'
 import { generateObject } from 'ai'
-
-const schema = z.object({
-  reasoningSteps: z.array(
-    z.string())
-    .describe("The reasoning steps taken by the model to generate the synthesis."),
-  nodes: z.array(
-    z.object({
-      id: z.string(),
-      data: z.object({
-        label: z.string(),
-      }),
-    })
-  ),
-  edges: z.array(
-    z.object({
-      id: z.string(),
-      source: z.string(),
-      target: z.string(),
-    })
-  ),
-})
+import { synthesisSchema } from '@/lib/synthesis'
 
 export async function POST(req: Request) {
   try {
@@ -56,7 +35,7 @@ ${JSON.stringify({ nodes: currentNodes, edges: currentEdges }, null, 2)}`
       model: openai("o3"),
       system: systemPrompt,
       prompt: prompt,
-      schema: schema
+      schema: synthesisSchema
     })
 
     if (!response) {
