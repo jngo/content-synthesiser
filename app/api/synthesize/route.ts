@@ -21,13 +21,23 @@ export async function POST(req: Request) {
 
     const schema = z
     .object({
-      pan: z
-        .object({
-          x: z.number().describe("Current pan offset on the x-axis."),
-          y: z.number().describe("Current pan offset on the y-axis."),
-        })
-        .strict(),
-      zoom: z.number().describe("Current zoom level of the tree diagram."),
+      reasoningSteps: z
+        .array(z.string())
+        .describe("The reasoning steps taken by the model to generate the synthesis."),
+      nodes: z
+        .array(
+          z
+            .object({
+              id: z.string().describe("Unique identifier for the node."),
+              data: z
+                .object({
+                  label: z.string().describe("Label of the node."),
+                })
+                .strict(),
+            })
+            .strict()
+        )
+        .describe("Array of nodes in the tree diagram."),
       edges: z
         .array(
           z
@@ -39,26 +49,6 @@ export async function POST(req: Request) {
             .strict()
         )
         .describe("Array of edges connecting the nodes in the diagram."),
-      nodes: z
-        .array(
-          z
-            .object({
-              id: z.string().describe("Unique identifier for the node."),
-              data: z
-                .object({
-                  label: z.string().describe("Label of the node."),
-                })
-                .strict(),
-              position: z
-                .object({
-                  x: z.number().describe("X coordinate of the node."),
-                  y: z.number().describe("Y coordinate of the node."),
-                })
-                .strict(),
-            })
-            .strict()
-        )
-        .describe("Array of nodes in the tree diagram."),
     })
     .strict();
 
@@ -88,4 +78,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: errorMessage }, { status })
   }
 }
-

@@ -5,15 +5,14 @@ import { Node, Edge } from 'reactflow'
 import { generateObject } from 'ai'
 
 const schema = z.object({
+  reasoningSteps: z.array(
+    z.string())
+    .describe("The reasoning steps taken by the model to generate the synthesis."),
   nodes: z.array(
     z.object({
       id: z.string(),
       data: z.object({
         label: z.string(),
-      }),
-      position: z.object({
-        x: z.number(),
-        y: z.number(),
       }),
     })
   ),
