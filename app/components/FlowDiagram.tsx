@@ -154,7 +154,7 @@ export default function FlowDiagram({
     } finally {
       setExpandingNodeId(null)
     }
-  }, [nodes, edges, direction, currentHistoryId, updateHistoryItem])
+  }, [nodes, edges, direction, currentHistoryId, updateHistoryItem, setEdges, setNodes])
 
   // Update nodes to include onExpand handler and loading state
   const nodesWithHandlers = nodes.map(node => ({
