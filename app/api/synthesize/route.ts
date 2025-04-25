@@ -5,10 +5,12 @@ import { synthesisSchema } from "@/lib/synthesis"
 
 export async function POST(req: Request) {
   try {
-    const { title } = await req.json()
+    const formData = await req.formData()
+    const title = formData.get('title') as string
+    const file = formData.get('file') as File | null
 
-    if (!title) {
-      return NextResponse.json({ error: "Title is required" }, { status: 400 })
+    if (!title && !file) {
+      return NextResponse.json({ error: "Either title or file is required" }, { status: 400 })
     }
 
     const systemPrompt = `Given the title of a book, publication, article, or other content, synthesise the key insight by taking the following steps:
@@ -19,12 +21,39 @@ export async function POST(req: Request) {
 - Synthesise these labels into a single sentence that provides a new perspective based on insights and implications of these ideas.
 - Present your key insight as a Minto Pyramid structured flowchart, with synthesis at the top, key line in the middle, and ideas at the bottom. Format as a React Flow diagram with nodes and edges.`
 
-    const response = await generateObject({
-      model: openai("o3"),
-      system: systemPrompt,
-      prompt: title,
-      schema: synthesisSchema
-    })
+    let response
+    if (file) {
+      const fileBuffer = await file.arrayBuffer()
+      response = await generateObject({
+        model: openai("o3"),
+        system: systemPrompt,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "Analyze this document and create a synthesis diagram:",
+              },
+              {
+                type: "file",
+                data: Buffer.from(fileBuffer),
+                mimeType: "application/pdf",
+                filename: file.name,
+              },
+            ],
+          },
+        ],
+        schema: synthesisSchema,
+      })
+    } else {
+      response = await generateObject({
+        model: openai("o3"),
+        system: systemPrompt,
+        prompt: title,
+        schema: synthesisSchema,
+      })
+    }
 
     if (!response) {
       throw new Error("No content generated from OpenAI")

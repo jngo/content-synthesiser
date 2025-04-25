@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { History } from "lucide-react"
+import { History, Upload } from "lucide-react"
 import FlowDiagram from "./components/FlowDiagram"
 import type { Node, Edge } from 'reactflow'
 import exampleData from '@/lib/example.json'
@@ -26,11 +26,35 @@ interface DiagramData {
 
 export default function Home() {
   const [title, setTitle] = useState("")
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [diagramData, setDiagramData] = useState<DiagramData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { history, addToHistory, reloadHistory } = useSynthesisHistory()
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file type
+    if (file.type !== 'application/pdf') {
+      setError("Please select a PDF file")
+      return
+    }
+
+    // Check file size (32 MB = 32 * 1024 * 1024 bytes)
+    const maxSize = 32 * 1024 * 1024
+    if (file.size > maxSize) {
+      setError("File size must be less than 32 MB")
+      return
+    }
+
+    setSelectedFile(file)
+    setTitle(file.name)
+    setError("")
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,12 +72,16 @@ export default function Home() {
     }
 
     try {
+      const formData = new FormData()
+      if (selectedFile) {
+        formData.append('file', selectedFile)
+      } else {
+        formData.append('title', title)
+      }
+
       const response = await fetch("/api/synthesize", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ title }),
+        body: formData,
       })
 
       if (!response.ok) {
@@ -102,23 +130,58 @@ export default function Home() {
           <form onSubmit={handleSubmit} className="mb-4">
             <div className="flex gap-2">
               <div className="relative flex-grow">
-                <Input
-                  ref={inputRef}
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter title of book, article, or publication"
-                  className="w-full pr-8"
-                  disabled={isLoading}
-                />
-                {history.length > 0 && (
+                {selectedFile ? (
+                  <div className="flex items-center gap-2 p-2 border rounded-md">
+                    <span className="truncate">{selectedFile.name}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedFile(null)
+                        setTitle("")
+                      }}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Input
+                      ref={inputRef}
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Enter title of book, article, or publication"
+                      className="w-full pr-8"
+                      disabled={isLoading}
+                    />
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept=".pdf"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+                {history.length > 0 && !selectedFile && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6"
+                        className="absolute right-10 top-1/2 -translate-y-1/2 h-6 w-6"
                       >
                         <History className="h-4 w-4" />
                       </Button>
