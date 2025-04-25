@@ -30,7 +30,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
-  const { history, addToHistory, updateHistoryItem, reloadHistory } = useSynthesisHistory()
+  const { history, addToHistory, reloadHistory } = useSynthesisHistory()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
