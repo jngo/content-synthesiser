@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import ReactFlow, {
   Node,
   Edge,
@@ -14,6 +14,7 @@ import ReactFlow, {
 import dagre from 'dagre'
 import IdeaNode from './IdeaNode';
 import SynthesisNode from './SynthesisNode';
+import { useSynthesisHistory } from '@/hooks/useSynthesisHistory';
 
 const nodeTypes = {
   idea: IdeaNode,
@@ -26,6 +27,7 @@ interface FlowDiagramProps {
   zoom?: number
   pan?: { x: number; y: number }
   direction?: 'TB' | 'LR'
+  currentHistoryId?: string
 }
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: 'TB' | 'LR' = 'TB') => {
@@ -79,8 +81,10 @@ export default function FlowDiagram({
   edges: initialEdges, 
   zoom = 1, 
   pan = { x: 0, y: 0 },
-  direction = 'TB'
+  direction = 'TB',
+  currentHistoryId
 }: FlowDiagramProps) {
+  const { updateHistoryItem } = useSynthesisHistory();
   const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
     initialNodes,
     initialEdges,
@@ -90,6 +94,17 @@ export default function FlowDiagram({
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges)
   const [expandingNodeId, setExpandingNodeId] = useState<string | null>(null)
+
+  // Add useEffect to update nodes and edges when props change
+  useEffect(() => {
+    const { nodes: newLayoutedNodes, edges: newLayoutedEdges } = getLayoutedElements(
+      initialNodes,
+      initialEdges,
+      direction
+    )
+    setNodes(newLayoutedNodes)
+    setEdges(newLayoutedEdges)
+  }, [initialNodes, initialEdges, direction, setNodes, setEdges])
 
   const onInit = useCallback((reactFlowInstance: ReactFlowInstance) => {
     if (zoom !== 1 || pan.x !== 0 || pan.y !== 0) {
@@ -129,12 +144,17 @@ export default function FlowDiagram({
 
       setNodes(layoutedNodes)
       setEdges(layoutedEdges)
+
+      // Update history if we have a current history ID
+      if (currentHistoryId) {
+        updateHistoryItem(currentHistoryId, layoutedNodes, layoutedEdges)
+      }
     } catch (error) {
       console.error('Error expanding node:', error)
     } finally {
       setExpandingNodeId(null)
     }
-  }, [nodes, edges, direction])
+  }, [nodes, edges, direction, currentHistoryId, updateHistoryItem])
 
   // Update nodes to include onExpand handler and loading state
   const nodesWithHandlers = nodes.map(node => ({
