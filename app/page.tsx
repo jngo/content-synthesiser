@@ -60,7 +60,7 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    track('synthesize_submit', { withFile: Boolean(selectedFile) })
+    track('synthesis_new_text', { query: title })
     setIsLoading(true)
     setError("")
     setDiagramData(null)
@@ -117,7 +117,7 @@ export default function Home() {
 
   const handleHistorySelect = (item: typeof history[0]) => {
     reloadHistory(); // Reload history from localStorage
-    track('history_select', { id: item.id })
+    track('history_select', { title: item.title })
     setTitle(item.title)
     setDiagramData({
       nodes: item.nodes,

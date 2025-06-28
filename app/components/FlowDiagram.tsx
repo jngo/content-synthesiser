@@ -145,7 +145,7 @@ export default function FlowDiagram({
 
       setNodes(layoutedNodes)
       setEdges(layoutedEdges)
-      track('node_expand', { id: nodeId })
+      track('node_expand', { title: nodeToExpand.data.label })
 
       // Update history if we have a current history ID
       if (currentHistoryId) {
@@ -153,7 +153,9 @@ export default function FlowDiagram({
       }
     } catch (error) {
       console.error('Error expanding node:', error)
-      track('node_expand_error')
+      track('node_expand_error', {
+        message: error instanceof Error ? error.message : String(error),
+      })
     } finally {
       setExpandingNodeId(null)
     }
