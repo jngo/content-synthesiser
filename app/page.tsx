@@ -55,7 +55,7 @@ export default function Home() {
     setSelectedFile(file)
     setTitle(file.name)
     setError("")
-    track('file_selected', { name: file.name, size: file.size })
+    track('synthesis_new_file', { name: file.name, size: file.size })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
