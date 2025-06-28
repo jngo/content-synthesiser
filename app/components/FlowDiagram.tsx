@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useState, useEffect } from 'react'
+import { track } from '@vercel/analytics'
 import ReactFlow, {
   Node,
   Edge,
@@ -144,6 +145,7 @@ export default function FlowDiagram({
 
       setNodes(layoutedNodes)
       setEdges(layoutedEdges)
+      track('node_expand', { id: nodeId })
 
       // Update history if we have a current history ID
       if (currentHistoryId) {
@@ -151,6 +153,7 @@ export default function FlowDiagram({
       }
     } catch (error) {
       console.error('Error expanding node:', error)
+      track('node_expand_error')
     } finally {
       setExpandingNodeId(null)
     }
