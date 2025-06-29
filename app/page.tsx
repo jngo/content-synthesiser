@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useRef } from "react"
+import { track } from "@vercel/analytics"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -54,10 +55,12 @@ export default function Home() {
     setSelectedFile(file)
     setTitle(file.name)
     setError("")
+    track('synthesis_new_file', { name: file.name, size: file.size })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    track('synthesis_new_text', { query: title })
     setIsLoading(true)
     setError("")
     setDiagramData(null)
@@ -67,6 +70,7 @@ export default function Home() {
       const newHistoryId = crypto.randomUUID()
       setDiagramData({ ...exampleData, historyId: newHistoryId })
       addToHistory("Example", exampleData.nodes, exampleData.edges)
+      track('synthesis_example')
       setIsLoading(false)
       return
     }
@@ -102,8 +106,10 @@ export default function Home() {
       const newHistoryId = crypto.randomUUID()
       setDiagramData({ ...data, historyId: newHistoryId })
       addToHistory(title, data.nodes, data.edges)
+      track('synthesis_success')
     } catch (error) {
       setError(error instanceof Error ? error.message : "An unknown error occurred")
+      track('synthesis_error', { message: error instanceof Error ? error.message : String(error) })
     } finally {
       setIsLoading(false)
     }
@@ -111,6 +117,7 @@ export default function Home() {
 
   const handleHistorySelect = (item: typeof history[0]) => {
     reloadHistory(); // Reload history from localStorage
+    track('history_select', { title: item.title })
     setTitle(item.title)
     setDiagramData({
       nodes: item.nodes,
