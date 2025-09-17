@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     if (file) {
       const fileBuffer = await file.arrayBuffer()
       response = await generateObject({
-        model: openai("o3"),
+        model: openai("gpt-5"),
         system: systemPrompt,
         messages: [
           {
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
               {
                 type: "file",
                 data: Buffer.from(fileBuffer),
-                mimeType: "application/pdf",
+                mediaType: file.type || "application/octet-stream",
                 filename: file.name,
               },
             ],
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       })
     } else {
       response = await generateObject({
-        model: openai("o3"),
+        model: openai("gpt-5"),
         system: systemPrompt,
         prompt: title,
         schema: synthesisSchema,

@@ -32,7 +32,7 @@ Current diagram context:
 ${JSON.stringify({ nodes: currentNodes, edges: currentEdges }, null, 2)}`
 
     const response = await generateObject({
-      model: openai("o3"),
+      model: openai("gpt-5"),
       system: systemPrompt,
       prompt: prompt,
       schema: synthesisSchema
