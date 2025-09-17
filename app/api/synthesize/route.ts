@@ -38,7 +38,7 @@ export async function POST(req: Request) {
               {
                 type: "file",
                 data: Buffer.from(fileBuffer),
-                mimeType: "application/pdf",
+                mediaType: file.type || "application/octet-stream",
                 filename: file.name,
               },
             ],
